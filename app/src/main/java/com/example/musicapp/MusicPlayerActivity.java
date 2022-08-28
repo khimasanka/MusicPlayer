@@ -1,5 +1,6 @@
 package com.example.musicapp;
 
+import android.media.MediaPlayer;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -8,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +20,7 @@ public class MusicPlayerActivity extends AppCompatActivity {
     ImageView pausePlay, nextBtn, previousBtn, musicIcon;
     ArrayList<AudioModel> songsList;
     AudioModel currentSong;
+    MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +36,8 @@ public class MusicPlayerActivity extends AppCompatActivity {
         previousBtn = findViewById(R.id.previous);
         musicIcon = findViewById(R.id.music_icon_big);
 
+        titleTv.setSelected(true);
+
         songsList = (ArrayList<AudioModel>) getIntent().getSerializableExtra("LIST");
 
         setResourcesWithMusic();
@@ -43,27 +48,54 @@ public class MusicPlayerActivity extends AppCompatActivity {
         titleTv.setText(currentSong.getTitle());
 
         totalTimeTv.setText(convertToMMSS(currentSong.getDuration()));
+
+        pausePlay.setOnClickListener(v->pausePlay());
+        nextBtn.setOnClickListener(v-> playNextSong());
+        previousBtn.setOnClickListener(v-> playPreviousSong());
+
+        playMusic();
     }
 
     private void playMusic(){
+        mediaPlayer.reset();
+        try {
+            mediaPlayer.setDataSource(currentSong.getPath());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            seekBar.setProgress(0);
+            seekBar.setMax(mediaPlayer.getDuration());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
     private void playNextSong(){
-
+        if (MyMediaPlayer.currentIndex == songsList.size()-1)
+            return;
+        MyMediaPlayer.currentIndex +=1;
+        mediaPlayer.reset();
+        setResourcesWithMusic();
     }
 
     private void playPreviousSong(){
-
+        if (MyMediaPlayer.currentIndex == 0)
+            return;
+        MyMediaPlayer.currentIndex -=1;
+        mediaPlayer.reset();
+        setResourcesWithMusic();
     }
 
     private void pausePlay(){
-
+        if (mediaPlayer.isPlaying())
+            mediaPlayer.pause();
+        else
+            mediaPlayer.start();
     }
 
     public static String convertToMMSS(String duration){
         Long millis = Long.parseLong(duration);
         return String.format("%02d:%02d", TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
-                TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.HOURS.toSeconds(1));
+                TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1));
     }
 }
