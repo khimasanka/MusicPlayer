@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         }else {
             recyclerview.setLayoutManager(new LinearLayoutManager(this));
-            recyclerview.setAdapter();
+            recyclerview.setAdapter(new MusicListAdapter(songsList,getApplicationContext()));
         }
     }
 
