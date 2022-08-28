@@ -1,6 +1,7 @@
 package com.example.musicapp;
 
 import android.media.MediaPlayer;
+import android.os.Handler;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -41,6 +42,42 @@ public class MusicPlayerActivity extends AppCompatActivity {
         songsList = (ArrayList<AudioModel>) getIntent().getSerializableExtra("LIST");
 
         setResourcesWithMusic();
+
+        MusicPlayerActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mediaPlayer != null){
+                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
+                    currentTimeTv.setText(convertToMMSS(mediaPlayer.getCurrentPosition()+""));
+
+                    if (mediaPlayer.isPlaying()){
+                        pausePlay.setImageResource(R.drawable.ic_baseline_pause_circle_outline_24);
+                    }else {
+                        pausePlay.setImageResource(R.drawable.ic_baseline_play_circle_outline_24);
+                    }
+                }
+                new Handler().postDelayed(this,100);
+            }
+        });
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (mediaPlayer!=null && fromUser){
+                    mediaPlayer.seekTo(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     void setResourcesWithMusic(){
